@@ -1,0 +1,30 @@
+C:\Users\emre_\Documents\Projects\AltınToplamaOyunu2\AltınToplamaOyunu2\bin\Debug\AltınToplamaOyunu2.exe.config
+C:\Users\emre_\Documents\Projects\AltınToplamaOyunu2\AltınToplamaOyunu2\bin\Debug\AltınToplamaOyunu2.exe
+C:\Users\emre_\Documents\Projects\AltınToplamaOyunu2\AltınToplamaOyunu2\bin\Debug\AltınToplamaOyunu2.pdb
+C:\Users\emre_\Documents\Projects\AltınToplamaOyunu2\AltınToplamaOyunu2\obj\Debug\AltınToplamaOyunu2.csprojAssemblyReference.cache
+C:\Users\emre_\Documents\Projects\AltınToplamaOyunu2\AltınToplamaOyunu2\obj\Debug\AltınToplamaOyunu2.Form1.resources
+C:\Users\emre_\Documents\Projects\AltınToplamaOyunu2\AltınToplamaOyunu2\obj\Debug\AltınToplamaOyunu2.Properties.Resources.resources
+C:\Users\emre_\Documents\Projects\AltınToplamaOyunu2\AltınToplamaOyunu2\obj\Debug\AltınToplamaOyunu2.csproj.GenerateResource.cache
+C:\Users\emre_\Documents\Projects\AltınToplamaOyunu2\AltınToplamaOyunu2\obj\Debug\AltınToplamaOyunu2.csproj.CoreCompileInputs.cache
+C:\Users\emre_\Documents\Projects\AltınToplamaOyunu2\AltınToplamaOyunu2\obj\Debug\AltınToplamaOyunu2.exe
+C:\Users\emre_\Documents\Projects\AltınToplamaOyunu2\AltınToplamaOyunu2\obj\Debug\AltınToplamaOyunu2.pdb
+C:\Github\AltinToplama\AltınToplamaOyunu2\bin\Debug\AltınToplamaOyunu2.exe.config
+C:\Github\AltinToplama\AltınToplamaOyunu2\bin\Debug\AltınToplamaOyunu2.exe
+C:\Github\AltinToplama\AltınToplamaOyunu2\bin\Debug\AltınToplamaOyunu2.pdb
+C:\Github\AltinToplama\AltınToplamaOyunu2\obj\Debug\AltınToplamaOyunu2.csprojAssemblyReference.cache
+C:\Github\AltinToplama\AltınToplamaOyunu2\obj\Debug\AltınToplamaOyunu2.Form1.resources
+C:\Github\AltinToplama\AltınToplamaOyunu2\obj\Debug\AltınToplamaOyunu2.Properties.Resources.resources
+C:\Github\AltinToplama\AltınToplamaOyunu2\obj\Debug\AltınToplamaOyunu2.csproj.GenerateResource.cache
+C:\Github\AltinToplama\AltınToplamaOyunu2\obj\Debug\AltınToplamaOyunu2.csproj.CoreCompileInputs.cache
+C:\Github\AltinToplama\AltınToplamaOyunu2\obj\Debug\AltınToplamaOyunu2.exe
+C:\Github\AltinToplama\AltınToplamaOyunu2\obj\Debug\AltınToplamaOyunu2.pdb
+D:\Backup\Projects\Yazlab - I\Y1P1\AltinToplama\AltınToplamaOyunu2\bin\Debug\AltınToplamaOyunu2.exe.config
+D:\Backup\Projects\Yazlab - I\Y1P1\AltinToplama\AltınToplamaOyunu2\bin\Debug\AltınToplamaOyunu2.exe
+D:\Backup\Projects\Yazlab - I\Y1P1\AltinToplama\AltınToplamaOyunu2\bin\Debug\AltınToplamaOyunu2.pdb
+D:\Backup\Projects\Yazlab - I\Y1P1\AltinToplama\AltınToplamaOyunu2\obj\Debug\AltınToplamaOyunu2.csproj.AssemblyReference.cache
+D:\Backup\Projects\Yazlab - I\Y1P1\AltinToplama\AltınToplamaOyunu2\obj\Debug\AltınToplamaOyunu2.Form1.resources
+D:\Backup\Projects\Yazlab - I\Y1P1\AltinToplama\AltınToplamaOyunu2\obj\Debug\AltınToplamaOyunu2.Properties.Resources.resources
+D:\Backup\Projects\Yazlab - I\Y1P1\AltinToplama\AltınToplamaOyunu2\obj\Debug\AltınToplamaOyunu2.csproj.GenerateResource.cache
+D:\Backup\Projects\Yazlab - I\Y1P1\AltinToplama\AltınToplamaOyunu2\obj\Debug\AltınToplamaOyunu2.csproj.CoreCompileInputs.cache
+D:\Backup\Projects\Yazlab - I\Y1P1\AltinToplama\AltınToplamaOyunu2\obj\Debug\AltınToplamaOyunu2.exe
+D:\Backup\Projects\Yazlab - I\Y1P1\AltinToplama\AltınToplamaOyunu2\obj\Debug\AltınToplamaOyunu2.pdb

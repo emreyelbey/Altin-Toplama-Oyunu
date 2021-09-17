@@ -1,0 +1,1952 @@
+using System;
+using System.Drawing;
+using System.Windows.Forms;
+
+namespace AltınToplamaOyunu2
+{
+    public class Altin
+    {
+        private int kare_sayisi_x;
+        private int kare_sayisi_y;
+        private int altinSayisi;
+        public static int gizliAltinSayisi;
+        public static int[,] altinKonumlariMatrisi;
+        public static int[,] altinMiktarlariMatrisi;
+        public static int[,] altinHedeflenmislerMatrisi;
+        Random random;
+        KonumKontrol konumKontrol;
+        
+        public Altin(int kare_sayisi_x, int kare_sayisi_y, int altin_orani, int gizli_altin_orani)
+        {
+            this.kare_sayisi_x = kare_sayisi_x;
+            this.kare_sayisi_y = kare_sayisi_y;
+            this.altinSayisi = (int)(kare_sayisi_x * kare_sayisi_y * (altin_orani / 100.0f));
+            gizliAltinSayisi = (int)(altinSayisi * (gizli_altin_orani / 100.0f));
+            altinKonumlariMatrisi = new int[kare_sayisi_x, kare_sayisi_y];
+            altinMiktarlariMatrisi = new int[kare_sayisi_x, kare_sayisi_y];
+            altinHedeflenmislerMatrisi = new int[kare_sayisi_x, kare_sayisi_y];
+            konumKontrol = new KonumKontrol(kare_sayisi_x, kare_sayisi_y);
+            random = new Random();
+            AltinlariDagit();
+            GizliAltinlariDagit();
+            AltinMiktarlariniDagit();
+        }
+
+        public void AltinlariDagit()
+        {
+            int x, y;
+            for (int i=0; i<altinSayisi; i++)
+            {
+                x = random.Next(kare_sayisi_x);
+                y = random.Next(kare_sayisi_y);
+                if(altinKonumlariMatrisi[x, y] == 0 && !konumKontrol.OyuncuKonumuMu(x, y))
+                {
+                    altinKonumlariMatrisi[x, y] = 1;
+                }
+                else
+                {
+                    while(altinKonumlariMatrisi[x, y] == 1 || konumKontrol.OyuncuKonumuMu(x, y))
+                    {
+                        x = random.Next(kare_sayisi_x);
+                        y = random.Next(kare_sayisi_y);
+                        if (altinKonumlariMatrisi[x, y] == 0 && !konumKontrol.OyuncuKonumuMu(x, y))
+                        {
+                            altinKonumlariMatrisi[x, y] = 1;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        public void GizliAltinlariDagit()
+        {
+            int x, y;
+            for (int i = 0; i <gizliAltinSayisi; i++)
+            {
+                x = random.Next(kare_sayisi_x);
+                y = random.Next(kare_sayisi_y);
+                if ((altinKonumlariMatrisi[x, y] == 1))
+                {
+                    altinKonumlariMatrisi[x, y] = 2;
+                }
+                else
+                {
+                    while (true)
+                    {
+                        x = random.Next(kare_sayisi_x);
+                        y = random.Next(kare_sayisi_y);
+                        if (altinKonumlariMatrisi[x, y] == 1)
+                        {
+                            altinKonumlariMatrisi[x, y] = 2;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        public void AltinMiktarlariniDagit()
+        {
+            int altin_miktari;
+            for(int i=0; i<kare_sayisi_x; i++)
+            {
+                for(int j=0; j<kare_sayisi_y; j++)
+                {
+                    if(altinKonumlariMatrisi[i,j] == 1 || altinKonumlariMatrisi[i, j] == 2)
+                    {
+                        altin_miktari = (1 + random.Next(4)) * 5;
+                        altinMiktarlariMatrisi[i, j] = altin_miktari;
+                    }
+                }
+            }
+        }
+
+        public void AltinlariCizdir(PaintEventArgs g, Kare[,] kareler)
+        {
+            for(int k=0; k<altinSayisi; k++)
+            {
+                for(int i=0; i<kare_sayisi_x; i++)
+                {
+                    for(int j=0; j<kare_sayisi_y; j++)
+                    {
+                        if(altinKonumlariMatrisi[i, j] == 1)
+                        {
+                            kareler[i, j].KareBoya(g, Color.Yellow);
+                        }
+                        
+                    }
+                }
+            }
+        }
+
+        public void GizliAltinlariCizdir(PaintEventArgs g, Kare[,] kareler)
+        {
+            for (int k = 0; k<gizliAltinSayisi; k++)
+            {
+                for (int i = 0; i < kare_sayisi_x; i++)
+                {
+                    for (int j = 0; j < kare_sayisi_y; j++)
+                    {
+                        if (altinKonumlariMatrisi[i, j] == 2)
+                        {
+                            kareler[i, j].KareBoya(g, Color.Orange);
+                        }
+
+                    }
+                }
+            }
+        }
+
+        public void AltinMiktarlariniCizdir(PaintEventArgs g, Kare[,] kareler)
+        {
+            for(int i=0; i<kare_sayisi_x; i++)
+            {
+                for(int j=0; j<kare_sayisi_y; j++)
+                {
+                    if(altinKonumlariMatrisi[i,j] == 1 || altinKonumlariMatrisi[i, j] == 2)
+                    {
+                        kareler[i, j].KareYazdir(g, Color.Black, altinMiktarlariMatrisi[i,j].ToString());
+                    }
+                }
+            }
+        }
+    }
+}
+
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+
+namespace AltınToplamaOyunu2
+{
+    public class AOyuncusu : Oyuncu
+    {
+        Log log;
+        public AOyuncusu(Oyun oyun, string adi, int x, int y, int baslangic_altin_miktari, Color color, Log log) : base(oyun, adi, x, y, baslangic_altin_miktari, VarsayilanDegerler.A_HAMLE_MALIYETI, VarsayilanDegerler.A_HEDEF_MALIYETI)
+        {
+            this.color = color;
+            this.log = log;
+        }
+
+        public override void HedefBelirle()
+        {
+            if (this.HedefBelirlemeMaliyetKontrolu())
+            {
+                int en_yakin_hedef_uzakligi = Int32.MaxValue;
+
+                for (int i = 0; i < Altin.altinKonumlariMatrisi.GetUpperBound(0) + 1; i++)
+                {
+                    for (int j = 0; j < Altin.altinKonumlariMatrisi.GetUpperBound(1) + 1; j++)
+                    {
+                        if (Altin.altinKonumlariMatrisi[i, j] == 1)
+                        {
+                            if (UzaklikHesapla(i, j) < en_yakin_hedef_uzakligi)
+                            {
+                                if (UzaklikHesapla(i, j) % VarsayilanDegerler.ADIM_SAYISI == 0)
+                                {
+                                    this.hedefe_uzaklik = UzaklikHesapla(i, j) / VarsayilanDegerler.ADIM_SAYISI;
+                                }
+                                else
+                                {
+                                    this.hedefe_uzaklik = UzaklikHesapla(i, j) / VarsayilanDegerler.ADIM_SAYISI + 1;
+                                }
+
+                                en_yakin_hedef_uzakligi = UzaklikHesapla(i, j);
+                                this.hedef_x = i;
+                                this.hedef_y = j;
+                                Altin.altinHedeflenmislerMatrisi[i, j] = 3;
+                                this.kac_hamlede_ulasir = this.hedefe_uzaklik;
+                            }
+                        }
+                    }
+                }
+                this.altin_miktari -= VarsayilanDegerler.A_HEDEF_MALIYETI;
+                this.harcanan_altin_miktari += VarsayilanDegerler.A_HEDEF_MALIYETI;
+            }
+            else
+            {
+                this.oyuncu_hayatta_mi = false;
+            }
+        }
+
+        public override void HamleYap(OyunAlaniMatrisi oyunAlaniMatrisi)
+        {
+            if (this.HamleYapmaMaliyetKontrolu())
+            {
+                base.HamleYap(oyunAlaniMatrisi);
+                this.altin_miktari -= VarsayilanDegerler.A_HAMLE_MALIYETI;
+                this.harcanan_altin_miktari += VarsayilanDegerler.A_HAMLE_MALIYETI;
+            }
+            else
+            {
+                this.oyuncu_hayatta_mi = false;
+            }
+        }
+
+    }
+}
+
+using System;
+using System.Drawing;
+
+namespace AltınToplamaOyunu2
+{
+    public class BOyuncusu : Oyuncu
+    {
+        Log log;
+        public BOyuncusu(Oyun oyun, string adi, int x, int y, int baslangic_altin_miktari, Color color, Log log) : base(oyun, adi, x, y, baslangic_altin_miktari, VarsayilanDegerler.B_HAMLE_MALIYETI, VarsayilanDegerler.B_HEDEF_MALIYETI)
+        {
+            this.color = color;
+            this.log = log;
+        }
+
+        public override void HedefBelirle()
+        {
+            if (this.HedefBelirlemeMaliyetKontrolu())
+            {
+                int kar_miktari = Int32.MinValue;
+
+                for (int i = 0; i < Altin.altinKonumlariMatrisi.GetUpperBound(0) + 1; i++)
+                {
+                    for (int j = 0; j < Altin.altinKonumlariMatrisi.GetUpperBound(1) + 1; j++)
+                    {
+                        if (Altin.altinKonumlariMatrisi[i, j] == 1)
+                        {
+                            if (UzaklikHesapla(i, j) % VarsayilanDegerler.ADIM_SAYISI == 0)
+                            {
+                                this.hedefe_uzaklik = UzaklikHesapla(i, j) / VarsayilanDegerler.ADIM_SAYISI;
+                            }
+                            else
+                            {
+                                this.hedefe_uzaklik = UzaklikHesapla(i, j) / VarsayilanDegerler.ADIM_SAYISI + 1;
+                            }
+
+                            if (Altin.altinMiktarlariMatrisi[i, j] - (this.hedefe_uzaklik * VarsayilanDegerler.B_HAMLE_MALIYETI) > kar_miktari)
+                            {
+                                kar_miktari = Altin.altinMiktarlariMatrisi[i, j] - (this.hedefe_uzaklik * VarsayilanDegerler.B_HAMLE_MALIYETI);
+                                this.hedef_x = i;
+                                this.hedef_y = j;
+                                Altin.altinHedeflenmislerMatrisi[i, j] = 3;
+                                this.kac_hamlede_ulasir = this.hedefe_uzaklik;
+                            }
+                        }
+                    }
+                }
+                this.altin_miktari -= VarsayilanDegerler.B_HEDEF_MALIYETI;
+                this.harcanan_altin_miktari += VarsayilanDegerler.B_HEDEF_MALIYETI;
+            }
+            else
+            {
+                this.oyuncu_hayatta_mi = false;
+            }
+        }
+
+        public override void HamleYap(OyunAlaniMatrisi oyunAlaniMatrisi)
+        {
+            if (this.HamleYapmaMaliyetKontrolu())
+            {
+                base.HamleYap(oyunAlaniMatrisi);
+                this.altin_miktari -= VarsayilanDegerler.B_HAMLE_MALIYETI;
+                this.harcanan_altin_miktari += VarsayilanDegerler.B_HAMLE_MALIYETI;
+            }
+            else
+            {
+                this.oyuncu_hayatta_mi = false;
+            }
+        }
+    }
+}
+
+using System;
+using System.Drawing;
+
+namespace AltınToplamaOyunu2
+{
+    public class COyuncusu : Oyuncu
+    {
+        public bool gizli_altin_acma_ilk_adim = false;
+        public int[] gizli_altin_uzakliklari;
+        public int[] en_yakin_gizli_altin_indisleri;
+        Log log;
+        public COyuncusu(Oyun oyun, string adi, int x, int y, int baslangic_altin_miktari, Color color, Log log) : base(oyun, adi, x, y, baslangic_altin_miktari, VarsayilanDegerler.C_HAMLE_MALIYETI, VarsayilanDegerler.C_HEDEF_MALIYETI)
+        {
+            this.color = color;
+            this.log = log;
+        }
+
+        public override void HedefBelirle()
+        {
+            if (this.HedefBelirlemeMaliyetKontrolu())
+            {
+                if (Altin.gizliAltinSayisi > 0)
+                {
+                    GizliAltinAc();
+                }
+
+                int kar_miktari = Int32.MinValue;
+
+                for (int i = 0; i < Altin.altinKonumlariMatrisi.GetUpperBound(0) + 1; i++)
+                {
+                    for (int j = 0; j < Altin.altinKonumlariMatrisi.GetUpperBound(1) + 1; j++)
+                    {
+                        if (Altin.altinKonumlariMatrisi[i, j] == 1)
+                        {
+                            if (UzaklikHesapla(i, j) % VarsayilanDegerler.ADIM_SAYISI == 0)
+                            {
+                                this.hedefe_uzaklik = UzaklikHesapla(i, j) / VarsayilanDegerler.ADIM_SAYISI;
+                            }
+                            else
+                            {
+                                this.hedefe_uzaklik = UzaklikHesapla(i, j) / VarsayilanDegerler.ADIM_SAYISI + 1;
+                            }
+
+                            if (Altin.altinMiktarlariMatrisi[i, j] - (this.hedefe_uzaklik * VarsayilanDegerler.C_HAMLE_MALIYETI) > kar_miktari)
+                            {
+                                kar_miktari = Altin.altinMiktarlariMatrisi[i, j] - (this.hedefe_uzaklik * VarsayilanDegerler.C_HAMLE_MALIYETI);
+                                this.hedef_x = i;
+                                this.hedef_y = j;
+                                Altin.altinHedeflenmislerMatrisi[i, j] = 3;
+                                this.kac_hamlede_ulasir = this.hedefe_uzaklik;
+                            }
+                        }
+                    }
+                }
+                this.altin_miktari -= VarsayilanDegerler.C_HEDEF_MALIYETI;
+                this.harcanan_altin_miktari += VarsayilanDegerler.C_HEDEF_MALIYETI;
+            }
+            else
+            {
+                this.oyuncu_hayatta_mi = false;
+            }
+        }
+
+        public override void HamleYap(OyunAlaniMatrisi oyunAlaniMatrisi)
+        {
+            if (this.HamleYapmaMaliyetKontrolu())
+            {
+                base.HamleYap(oyunAlaniMatrisi);
+                this.altin_miktari -= VarsayilanDegerler.C_HAMLE_MALIYETI;
+                this.harcanan_altin_miktari += VarsayilanDegerler.C_HAMLE_MALIYETI;
+            }
+            else
+            {
+                this.oyuncu_hayatta_mi = false;
+            }
+        }
+
+        public void GizliAltinAc()
+        {
+            this.gizli_altin_uzakliklari = new int[Altin.gizliAltinSayisi];
+            this.en_yakin_gizli_altin_indisleri = new int[VarsayilanDegerler.C_ACILACAK_GIZLI];
+
+            int index_gizli_altin_uzakliklari = 0;
+            for (int i = 0; i < Altin.altinKonumlariMatrisi.GetUpperBound(0) + 1; i++)
+            {
+                for (int j = 0; j < Altin.altinKonumlariMatrisi.GetUpperBound(1) + 1; j++)
+                {
+                    if (Altin.altinKonumlariMatrisi[i, j] == 2)
+                    {
+                        gizli_altin_uzakliklari[index_gizli_altin_uzakliklari] = UzaklikHesapla(i, j);
+                        index_gizli_altin_uzakliklari++;
+                    }
+                }
+            }
+            //for(int i=0; i<gizli_altin_uzakliklari.Length; i++)
+            //{
+            //    Console.WriteLine(gizli_altin_uzakliklari[i]);
+            //}
+            int en_yakin_gizli_altin_uzakligi = Int32.MaxValue;
+            int anlik_en_yakin_gizli_altin = Int32.MaxValue;
+
+            for (int indis = 0; indis < VarsayilanDegerler.C_ACILACAK_GIZLI; indis++)
+            {
+                for (int i = 0; i < gizli_altin_uzakliklari.Length; i++)
+                {
+                    if (gizli_altin_uzakliklari[i] < en_yakin_gizli_altin_uzakligi)
+                    {
+                        en_yakin_gizli_altin_uzakligi = gizli_altin_uzakliklari[i];
+                        en_yakin_gizli_altin_indisleri[indis] = i;
+                        anlik_en_yakin_gizli_altin = i;
+                    }
+                }
+                gizli_altin_uzakliklari[anlik_en_yakin_gizli_altin] = Int32.MaxValue;
+                en_yakin_gizli_altin_uzakligi = Int32.MaxValue;
+            }
+            //Console.WriteLine();
+            //for(int i=0; i<en_yakin_gizli_altin_indisleri.Length; i++)
+            //{
+            //    Console.WriteLine(en_yakin_gizli_altin_indisleri[i]);
+            //}
+            int sayac = 0;
+
+            for (int i = 0; i < Altin.altinKonumlariMatrisi.GetUpperBound(0) + 1; i++)
+            {
+                for (int j = 0; j < Altin.altinKonumlariMatrisi.GetUpperBound(1) + 1; j++)
+                {
+                    if (Altin.altinKonumlariMatrisi[i, j] == 2)
+                    {
+                        for (int k = 0; k < en_yakin_gizli_altin_indisleri.Length; k++)
+                        {
+                            if (en_yakin_gizli_altin_indisleri[k] == sayac)
+                            {
+                                Altin.altinKonumlariMatrisi[i, j] = 1;
+                                Altin.gizliAltinSayisi--;
+                            }
+                        }
+                        sayac++;
+                    }
+                }
+            }
+
+        }
+    }
+}
+
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+
+namespace AltınToplamaOyunu2
+{
+    public class DOyuncusu : Oyuncu
+    {
+        List<Oyuncu> oyuncularListesi;
+        public bool kapkac_mode;
+        Log log;
+        public DOyuncusu(AOyuncusu aoyuncusu, BOyuncusu boyuncusu, COyuncusu coyuncusu,
+        Oyun oyun, string adi, int x, int y, int baslangic_altin_miktari, Color color, Log log) : base(oyun, adi, x, y, baslangic_altin_miktari, VarsayilanDegerler.D_HAMLE_MALIYETI, VarsayilanDegerler.D_HEDEF_MALIYETI)
+        {
+            this.color = color;
+            oyuncularListesi = new List<Oyuncu>();
+            oyuncularListesi.Add(aoyuncusu);
+            oyuncularListesi.Add(boyuncusu);
+            oyuncularListesi.Add(coyuncusu);
+            this.log = log;
+        }
+
+        public override void HedefBelirle()
+        {
+            if (this.HedefBelirlemeMaliyetKontrolu())
+            {
+                this.kapkac_mode = false;
+                CalinabilirAltinVarMi();
+                if (kapkac_mode == false)
+                {
+                    int kar_miktari = Int32.MinValue;
+
+                    for (int i = 0; i < Altin.altinKonumlariMatrisi.GetUpperBound(0) + 1; i++)
+                    {
+                        for (int j = 0; j < Altin.altinKonumlariMatrisi.GetUpperBound(1) + 1; j++)
+                        {
+                            if (Altin.altinKonumlariMatrisi[i, j] == 1 && Altin.altinHedeflenmislerMatrisi[i, j] != 3)
+                            {
+                                if (UzaklikHesapla(i, j) % VarsayilanDegerler.ADIM_SAYISI == 0)
+                                {
+                                    this.kac_hamlede_ulasir = UzaklikHesapla(i, j) / VarsayilanDegerler.ADIM_SAYISI;
+                                }
+                                else
+                                {
+                                    this.kac_hamlede_ulasir = UzaklikHesapla(i, j) / VarsayilanDegerler.ADIM_SAYISI + 1;
+                                }
+
+                                if (Altin.altinMiktarlariMatrisi[i, j] - (this.kac_hamlede_ulasir * VarsayilanDegerler.D_HAMLE_MALIYETI) > kar_miktari)
+                                {
+                                    kar_miktari = Altin.altinMiktarlariMatrisi[i, j] - (this.kac_hamlede_ulasir * VarsayilanDegerler.D_HAMLE_MALIYETI);
+                                    this.hedef_x = i;
+                                    this.hedef_y = j;
+                                }
+                            }
+                        }
+                    }
+                    this.altin_miktari -= VarsayilanDegerler.D_HEDEF_MALIYETI;
+                    this.harcanan_altin_miktari += VarsayilanDegerler.D_HEDEF_MALIYETI;
+                }
+            }
+            else
+            {
+                this.oyuncu_hayatta_mi = false;
+            }
+        }
+
+        public override void HamleYap(OyunAlaniMatrisi oyunAlaniMatrisi)
+        {
+            if (this.HamleYapmaMaliyetKontrolu())
+            {
+                base.HamleYap(oyunAlaniMatrisi);
+                this.altin_miktari -= VarsayilanDegerler.D_HAMLE_MALIYETI;
+                this.harcanan_altin_miktari += VarsayilanDegerler.D_HAMLE_MALIYETI;
+            }
+            else
+            {
+                this.oyuncu_hayatta_mi = false;
+            }
+        }
+
+        public void CalinabilirAltinVarMi()
+        {
+            int gelir = Int32.MinValue;
+
+            for (int i = 0; i < Altin.altinHedeflenmislerMatrisi.GetUpperBound(0) + 1; i++)
+            {
+                for (int j = 0; j < Altin.altinHedeflenmislerMatrisi.GetUpperBound(1) + 1; j++)
+                {
+                    if (Altin.altinHedeflenmislerMatrisi[i, j] == 3)
+                    {
+                        foreach (var oyuncu in oyuncularListesi)
+                        {
+                            if (i == oyuncu.hedef_x && j == oyuncu.hedef_y)
+                            {
+                                if (UzaklikHesapla(i, j) % VarsayilanDegerler.ADIM_SAYISI == 0)
+                                {
+                                    this.hedefe_uzaklik = UzaklikHesapla(i, j) / VarsayilanDegerler.ADIM_SAYISI;
+                                }
+                                else
+                                {
+                                    this.hedefe_uzaklik = UzaklikHesapla(i, j) / VarsayilanDegerler.ADIM_SAYISI + 1;
+                                }
+
+                                if (this.hedefe_uzaklik < oyuncu.kac_hamlede_ulasir)
+                                {
+                                    if (Altin.altinMiktarlariMatrisi[i, j] - (this.hedefe_uzaklik * VarsayilanDegerler.D_HEDEF_MALIYETI) > gelir)
+                                    {
+                                        gelir = Altin.altinMiktarlariMatrisi[i, j] - (this.hedefe_uzaklik * VarsayilanDegerler.D_HEDEF_MALIYETI);
+                                        this.hedef_x = i;
+                                        this.hedef_y = j;
+                                        this.kapkac_mode = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (kapkac_mode == true)
+            {
+                this.altin_miktari -= VarsayilanDegerler.D_HEDEF_MALIYETI;
+                this.harcanan_altin_miktari += VarsayilanDegerler.D_HEDEF_MALIYETI;
+            }
+        }
+
+    }
+}
+
+using System;
+using System.Windows.Forms;
+
+namespace AltınToplamaOyunu2
+{
+    public partial class Form1 : Form
+    {
+        Mesaj mesaj = new Mesaj();
+        IntegerKontrol IntegerKontrol = new IntegerKontrol();
+
+        public Form1()
+        {
+            InitializeComponent();
+            this.FormBorderStyle = FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
+        }
+
+        private void buttonBasla_Click(object sender, EventArgs e)
+        {
+            VarsayilanDegerler.KARE_SAY_X = IntegerKontrol.kontrolEt(textBoxOyunAlanıX.Text, VarsayilanDegerler.KARE_SAY_X);
+            VarsayilanDegerler.KARE_SAY_Y = IntegerKontrol.kontrolEt(textBoxOyunAlanıY.Text, VarsayilanDegerler.KARE_SAY_Y);
+            
+            VarsayilanDegerler.ALTIN_ORANI = IntegerKontrol.kontrolEt(textBoxAltinOrani.Text, VarsayilanDegerler.ALTIN_ORANI);
+            VarsayilanDegerler.GIZLI_ALTIN_ORANI = IntegerKontrol.kontrolEt(textBoxGizliAltinOrani.Text, VarsayilanDegerler.GIZLI_ALTIN_ORANI);
+            VarsayilanDegerler.BASLANGIC_ALTIN_MIKTARI = IntegerKontrol.kontrolEt(textBoxBaslangicAltin.Text, VarsayilanDegerler.BASLANGIC_ALTIN_MIKTARI);
+            VarsayilanDegerler.ADIM_SAYISI = IntegerKontrol.kontrolEt(textBoxAdimSayisi.Text, VarsayilanDegerler.ADIM_SAYISI);
+
+            VarsayilanDegerler.A_HAMLE_MALIYETI = IntegerKontrol.kontrolEt(textBoxHamleMaliyetA.Text, VarsayilanDegerler.A_HAMLE_MALIYETI);
+            VarsayilanDegerler.A_HEDEF_MALIYETI = IntegerKontrol.kontrolEt(textBoxHedefMaliyetA.Text, VarsayilanDegerler.A_HEDEF_MALIYETI);
+
+            VarsayilanDegerler.B_HAMLE_MALIYETI = IntegerKontrol.kontrolEt(textBoxHamleMaliyetB.Text, VarsayilanDegerler.B_HAMLE_MALIYETI);
+            VarsayilanDegerler.B_HEDEF_MALIYETI = IntegerKontrol.kontrolEt(textBoxHedefMaliyetB.Text, VarsayilanDegerler.B_HEDEF_MALIYETI);
+
+            VarsayilanDegerler.C_HAMLE_MALIYETI = IntegerKontrol.kontrolEt(textBoxHamleMaliyetC.Text, VarsayilanDegerler.C_HAMLE_MALIYETI);
+            VarsayilanDegerler.C_HEDEF_MALIYETI = IntegerKontrol.kontrolEt(textBoxHedefMaliyetC.Text, VarsayilanDegerler.C_HEDEF_MALIYETI);
+            VarsayilanDegerler.C_ACILACAK_GIZLI = IntegerKontrol.kontrolEt(textBoxGizliAltinC.Text, VarsayilanDegerler.C_ACILACAK_GIZLI);
+
+            VarsayilanDegerler.D_HAMLE_MALIYETI = IntegerKontrol.kontrolEt(textBoxHamleMaliyetD.Text, VarsayilanDegerler.D_HAMLE_MALIYETI);
+            VarsayilanDegerler.D_HEDEF_MALIYETI = IntegerKontrol.kontrolEt(textBoxHedefMaliyetD.Text, VarsayilanDegerler.D_HEDEF_MALIYETI);
+
+            if (VarsayilanDegerler.KARE_SAY_X != -1 && 
+                VarsayilanDegerler.KARE_SAY_Y != -1 &&
+                VarsayilanDegerler.ALTIN_ORANI != -1 &&
+                VarsayilanDegerler.GIZLI_ALTIN_ORANI != -1 &&
+                VarsayilanDegerler.BASLANGIC_ALTIN_MIKTARI != -1 &&
+                VarsayilanDegerler.ADIM_SAYISI != -1 &&
+                VarsayilanDegerler.A_HAMLE_MALIYETI != -1 &&
+                VarsayilanDegerler.A_HEDEF_MALIYETI != -1 &&
+                VarsayilanDegerler.B_HAMLE_MALIYETI != -1 &&
+                VarsayilanDegerler.B_HEDEF_MALIYETI != -1 &&
+                VarsayilanDegerler.C_HAMLE_MALIYETI != -1 &&
+                VarsayilanDegerler.C_HEDEF_MALIYETI != -1 &&
+                VarsayilanDegerler.C_ACILACAK_GIZLI != -1 &&
+                VarsayilanDegerler.D_HAMLE_MALIYETI != -1 &&
+                VarsayilanDegerler.D_HEDEF_MALIYETI != -1
+               )
+            {
+                this.Controls.Clear();
+                Oyun oyun = new Oyun(this.panelAcılısEkranı.Width, this.panelAcılısEkranı.Height);
+                this.Controls.Add(oyun);
+            }
+            else
+            {
+                mesaj.mesajVer();
+            }
+        }
+
+        private void buttonCıkıs_Click(object sender, EventArgs e)
+        {
+            Environment.Exit(-1);
+        }
+    }
+}
+
+namespace AltınToplamaOyunu2
+{
+    partial class Form1
+    {
+        /// <summary>
+        ///Gerekli tasarımcı değişkeni.
+        /// </summary>
+        private System.ComponentModel.IContainer components = null;
+
+        /// <summary>
+        ///Kullanılan tüm kaynakları temizleyin.
+        /// </summary>
+        ///<param name="disposing">yönetilen kaynaklar dispose edilmeliyse doğru; aksi halde yanlış.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+        #region Windows Form Designer üretilen kod
+
+        /// <summary>
+        /// Tasarımcı desteği için gerekli metot - bu metodun 
+        ///içeriğini kod düzenleyici ile değiştirmeyin.
+        /// </summary>
+        private void InitializeComponent()
+        {
+            this.panelAcılısEkranı = new System.Windows.Forms.Panel();
+            this.panel2 = new System.Windows.Forms.Panel();
+            this.labelD = new System.Windows.Forms.Label();
+            this.textBoxHamleMaliyetD = new System.Windows.Forms.TextBox();
+            this.textBoxHedefMaliyetD = new System.Windows.Forms.TextBox();
+            this.labelC = new System.Windows.Forms.Label();
+            this.textBoxGizliAltinC = new System.Windows.Forms.TextBox();
+            this.textBoxHamleMaliyetC = new System.Windows.Forms.TextBox();
+            this.textBoxHedefMaliyetC = new System.Windows.Forms.TextBox();
+            this.labelB = new System.Windows.Forms.Label();
+            this.textBoxHamleMaliyetB = new System.Windows.Forms.TextBox();
+            this.textBoxHedefMaliyetB = new System.Windows.Forms.TextBox();
+            this.labelA = new System.Windows.Forms.Label();
+            this.label3 = new System.Windows.Forms.Label();
+            this.textBoxHamleMaliyetA = new System.Windows.Forms.TextBox();
+            this.labelHamleMaliyeti = new System.Windows.Forms.Label();
+            this.labelHedefBelirlemeMaliyeti = new System.Windows.Forms.Label();
+            this.textBoxHedefMaliyetA = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.textBoxOyunAlanıX = new System.Windows.Forms.TextBox();
+            this.textBoxAdimSayisi = new System.Windows.Forms.TextBox();
+            this.labelOyunAlanıX = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
+            this.labelOyunAlanıY = new System.Windows.Forms.Label();
+            this.textBoxBaslangicAltin = new System.Windows.Forms.TextBox();
+            this.textBoxOyunAlanıY = new System.Windows.Forms.TextBox();
+            this.textBoxAltinOrani = new System.Windows.Forms.TextBox();
+            this.textBoxGizliAltinOrani = new System.Windows.Forms.TextBox();
+            this.labelAltinOrani = new System.Windows.Forms.Label();
+            this.labelGizliAltinOrani = new System.Windows.Forms.Label();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.buttonBasla = new System.Windows.Forms.Button();
+            this.buttonCıkıs = new System.Windows.Forms.Button();
+            this.labelBilgilendirme = new System.Windows.Forms.Label();
+            this.labelOyunBaslıgı = new System.Windows.Forms.Label();
+            this.labelAyarlar = new System.Windows.Forms.Label();
+            this.panelAcılısEkranı.SuspendLayout();
+            this.panel2.SuspendLayout();
+            this.panel1.SuspendLayout();
+            this.SuspendLayout();
+            // 
+            // panelAcılısEkranı
+            // 
+            this.panelAcılısEkranı.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(252)))), ((int)(((byte)(251)))), ((int)(((byte)(223)))));
+            this.panelAcılısEkranı.Controls.Add(this.panel2);
+            this.panelAcılısEkranı.Controls.Add(this.panel1);
+            this.panelAcılısEkranı.Controls.Add(this.labelBilgilendirme);
+            this.panelAcılısEkranı.Controls.Add(this.labelOyunBaslıgı);
+            this.panelAcılısEkranı.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panelAcılısEkranı.Location = new System.Drawing.Point(0, 0);
+            this.panelAcılısEkranı.Margin = new System.Windows.Forms.Padding(0);
+            this.panelAcılısEkranı.Name = "panelAcılısEkranı";
+            this.panelAcılısEkranı.Size = new System.Drawing.Size(1216, 768);
+            this.panelAcılısEkranı.TabIndex = 8;
+            // 
+            // panel2
+            // 
+            this.panel2.Controls.Add(this.labelAyarlar);
+            this.panel2.Controls.Add(this.labelD);
+            this.panel2.Controls.Add(this.textBoxHamleMaliyetD);
+            this.panel2.Controls.Add(this.textBoxHedefMaliyetD);
+            this.panel2.Controls.Add(this.labelC);
+            this.panel2.Controls.Add(this.textBoxGizliAltinC);
+            this.panel2.Controls.Add(this.textBoxHamleMaliyetC);
+            this.panel2.Controls.Add(this.textBoxHedefMaliyetC);
+            this.panel2.Controls.Add(this.labelB);
+            this.panel2.Controls.Add(this.textBoxHamleMaliyetB);
+            this.panel2.Controls.Add(this.textBoxHedefMaliyetB);
+            this.panel2.Controls.Add(this.labelA);
+            this.panel2.Controls.Add(this.label3);
+            this.panel2.Controls.Add(this.textBoxHamleMaliyetA);
+            this.panel2.Controls.Add(this.labelHamleMaliyeti);
+            this.panel2.Controls.Add(this.labelHedefBelirlemeMaliyeti);
+            this.panel2.Controls.Add(this.textBoxHedefMaliyetA);
+            this.panel2.Controls.Add(this.label1);
+            this.panel2.Controls.Add(this.textBoxOyunAlanıX);
+            this.panel2.Controls.Add(this.textBoxAdimSayisi);
+            this.panel2.Controls.Add(this.labelOyunAlanıX);
+            this.panel2.Controls.Add(this.label2);
+            this.panel2.Controls.Add(this.labelOyunAlanıY);
+            this.panel2.Controls.Add(this.textBoxBaslangicAltin);
+            this.panel2.Controls.Add(this.textBoxOyunAlanıY);
+            this.panel2.Controls.Add(this.textBoxAltinOrani);
+            this.panel2.Controls.Add(this.textBoxGizliAltinOrani);
+            this.panel2.Controls.Add(this.labelAltinOrani);
+            this.panel2.Controls.Add(this.labelGizliAltinOrani);
+            this.panel2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panel2.Location = new System.Drawing.Point(0, 159);
+            this.panel2.Name = "panel2";
+            this.panel2.Size = new System.Drawing.Size(1216, 479);
+            this.panel2.TabIndex = 27;
+            // 
+            // labelD
+            // 
+            this.labelD.BackColor = System.Drawing.Color.Transparent;
+            this.labelD.Font = new System.Drawing.Font("Microsoft YaHei UI", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.labelD.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(97)))), ((int)(((byte)(63)))), ((int)(((byte)(46)))));
+            this.labelD.Location = new System.Drawing.Point(1050, 105);
+            this.labelD.Name = "labelD";
+            this.labelD.Size = new System.Drawing.Size(70, 31);
+            this.labelD.TabIndex = 44;
+            this.labelD.Text = "D";
+            this.labelD.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // textBoxHamleMaliyetD
+            // 
+            this.textBoxHamleMaliyetD.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBoxHamleMaliyetD.Font = new System.Drawing.Font("Microsoft YaHei UI", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.textBoxHamleMaliyetD.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(97)))), ((int)(((byte)(63)))), ((int)(((byte)(46)))));
+            this.textBoxHamleMaliyetD.Location = new System.Drawing.Point(1056, 152);
+            this.textBoxHamleMaliyetD.Name = "textBoxHamleMaliyetD";
+            this.textBoxHamleMaliyetD.Size = new System.Drawing.Size(64, 38);
+            this.textBoxHamleMaliyetD.TabIndex = 41;
+            // 
+            // textBoxHedefMaliyetD
+            // 
+            this.textBoxHedefMaliyetD.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBoxHedefMaliyetD.Font = new System.Drawing.Font("Microsoft YaHei UI", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.textBoxHedefMaliyetD.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(97)))), ((int)(((byte)(63)))), ((int)(((byte)(46)))));
+            this.textBoxHedefMaliyetD.Location = new System.Drawing.Point(1056, 202);
+            this.textBoxHedefMaliyetD.Name = "textBoxHedefMaliyetD";
+            this.textBoxHedefMaliyetD.Size = new System.Drawing.Size(64, 38);
+            this.textBoxHedefMaliyetD.TabIndex = 42;
+            // 
+            // labelC
+            // 
+            this.labelC.BackColor = System.Drawing.Color.Transparent;
+            this.labelC.Font = new System.Drawing.Font("Microsoft YaHei UI", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.labelC.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(97)))), ((int)(((byte)(63)))), ((int)(((byte)(46)))));
+            this.labelC.Location = new System.Drawing.Point(980, 105);
+            this.labelC.Name = "labelC";
+            this.labelC.Size = new System.Drawing.Size(70, 31);
+            this.labelC.TabIndex = 40;
+            this.labelC.Text = "C";
+            this.labelC.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // textBoxGizliAltinC
+            // 
+            this.textBoxGizliAltinC.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBoxGizliAltinC.Font = new System.Drawing.Font("Microsoft YaHei UI", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.textBoxGizliAltinC.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(97)))), ((int)(((byte)(63)))), ((int)(((byte)(46)))));
+            this.textBoxGizliAltinC.Location = new System.Drawing.Point(986, 252);
+            this.textBoxGizliAltinC.Name = "textBoxGizliAltinC";
+            this.textBoxGizliAltinC.Size = new System.Drawing.Size(64, 38);
+            this.textBoxGizliAltinC.TabIndex = 39;
+            // 
+            // textBoxHamleMaliyetC
+            // 
+            this.textBoxHamleMaliyetC.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBoxHamleMaliyetC.Font = new System.Drawing.Font("Microsoft YaHei UI", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.textBoxHamleMaliyetC.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(97)))), ((int)(((byte)(63)))), ((int)(((byte)(46)))));
+            this.textBoxHamleMaliyetC.Location = new System.Drawing.Point(986, 152);
+            this.textBoxHamleMaliyetC.Name = "textBoxHamleMaliyetC";
+            this.textBoxHamleMaliyetC.Size = new System.Drawing.Size(64, 38);
+            this.textBoxHamleMaliyetC.TabIndex = 37;
+            // 
+            // textBoxHedefMaliyetC
+            // 
+            this.textBoxHedefMaliyetC.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBoxHedefMaliyetC.Font = new System.Drawing.Font("Microsoft YaHei UI", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.textBoxHedefMaliyetC.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(97)))), ((int)(((byte)(63)))), ((int)(((byte)(46)))));
+            this.textBoxHedefMaliyetC.Location = new System.Drawing.Point(986, 202);
+            this.textBoxHedefMaliyetC.Name = "textBoxHedefMaliyetC";
+            this.textBoxHedefMaliyetC.Size = new System.Drawing.Size(64, 38);
+            this.textBoxHedefMaliyetC.TabIndex = 38;
+            // 
+            // labelB
+            // 
+            this.labelB.BackColor = System.Drawing.Color.Transparent;
+            this.labelB.Font = new System.Drawing.Font("Microsoft YaHei UI", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.labelB.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(97)))), ((int)(((byte)(63)))), ((int)(((byte)(46)))));
+            this.labelB.Location = new System.Drawing.Point(910, 105);
+            this.labelB.Name = "labelB";
+            this.labelB.Size = new System.Drawing.Size(70, 31);
+            this.labelB.TabIndex = 36;
+            this.labelB.Text = "B";
+            this.labelB.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // textBoxHamleMaliyetB
+            // 
+            this.textBoxHamleMaliyetB.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBoxHamleMaliyetB.Font = new System.Drawing.Font("Microsoft YaHei UI", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.textBoxHamleMaliyetB.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(97)))), ((int)(((byte)(63)))), ((int)(((byte)(46)))));
+            this.textBoxHamleMaliyetB.Location = new System.Drawing.Point(916, 152);
+            this.textBoxHamleMaliyetB.Name = "textBoxHamleMaliyetB";
+            this.textBoxHamleMaliyetB.Size = new System.Drawing.Size(64, 38);
+            this.textBoxHamleMaliyetB.TabIndex = 33;
+            // 
+            // textBoxHedefMaliyetB
+            // 
+            this.textBoxHedefMaliyetB.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBoxHedefMaliyetB.Font = new System.Drawing.Font("Microsoft YaHei UI", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.textBoxHedefMaliyetB.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(97)))), ((int)(((byte)(63)))), ((int)(((byte)(46)))));
+            this.textBoxHedefMaliyetB.Location = new System.Drawing.Point(916, 202);
+            this.textBoxHedefMaliyetB.Name = "textBoxHedefMaliyetB";
+            this.textBoxHedefMaliyetB.Size = new System.Drawing.Size(64, 38);
+            this.textBoxHedefMaliyetB.TabIndex = 34;
+            // 
+            // labelA
+            // 
+            this.labelA.BackColor = System.Drawing.Color.Transparent;
+            this.labelA.Font = new System.Drawing.Font("Microsoft YaHei UI", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.labelA.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(97)))), ((int)(((byte)(63)))), ((int)(((byte)(46)))));
+            this.labelA.Location = new System.Drawing.Point(840, 105);
+            this.labelA.Name = "labelA";
+            this.labelA.Size = new System.Drawing.Size(70, 31);
+            this.labelA.TabIndex = 32;
+            this.labelA.Text = "A";
+            this.labelA.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.BackColor = System.Drawing.Color.Transparent;
+            this.label3.Font = new System.Drawing.Font("Microsoft YaHei UI", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.label3.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(97)))), ((int)(((byte)(63)))), ((int)(((byte)(46)))));
+            this.label3.Location = new System.Drawing.Point(529, 255);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(297, 31);
+            this.label3.TabIndex = 31;
+            this.label3.Text = "Açılacak Gizli Altın Sayısı:";
+            // 
+            // textBoxHamleMaliyetA
+            // 
+            this.textBoxHamleMaliyetA.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBoxHamleMaliyetA.Font = new System.Drawing.Font("Microsoft YaHei UI", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.textBoxHamleMaliyetA.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(97)))), ((int)(((byte)(63)))), ((int)(((byte)(46)))));
+            this.textBoxHamleMaliyetA.Location = new System.Drawing.Point(846, 152);
+            this.textBoxHamleMaliyetA.Name = "textBoxHamleMaliyetA";
+            this.textBoxHamleMaliyetA.Size = new System.Drawing.Size(64, 38);
+            this.textBoxHamleMaliyetA.TabIndex = 26;
+            // 
+            // labelHamleMaliyeti
+            // 
+            this.labelHamleMaliyeti.AutoSize = true;
+            this.labelHamleMaliyeti.BackColor = System.Drawing.Color.Transparent;
+            this.labelHamleMaliyeti.Font = new System.Drawing.Font("Microsoft YaHei UI", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.labelHamleMaliyeti.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(97)))), ((int)(((byte)(63)))), ((int)(((byte)(46)))));
+            this.labelHamleMaliyeti.Location = new System.Drawing.Point(529, 155);
+            this.labelHamleMaliyeti.Name = "labelHamleMaliyeti";
+            this.labelHamleMaliyeti.Size = new System.Drawing.Size(191, 31);
+            this.labelHamleMaliyeti.TabIndex = 28;
+            this.labelHamleMaliyeti.Text = "Hamle Maliyeti:";
+            // 
+            // labelHedefBelirlemeMaliyeti
+            // 
+            this.labelHedefBelirlemeMaliyeti.AutoSize = true;
+            this.labelHedefBelirlemeMaliyeti.BackColor = System.Drawing.Color.Transparent;
+            this.labelHedefBelirlemeMaliyeti.Font = new System.Drawing.Font("Microsoft YaHei UI", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.labelHedefBelirlemeMaliyeti.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(97)))), ((int)(((byte)(63)))), ((int)(((byte)(46)))));
+            this.labelHedefBelirlemeMaliyeti.Location = new System.Drawing.Point(529, 205);
+            this.labelHedefBelirlemeMaliyeti.Name = "labelHedefBelirlemeMaliyeti";
+            this.labelHedefBelirlemeMaliyeti.Size = new System.Drawing.Size(300, 31);
+            this.labelHedefBelirlemeMaliyeti.TabIndex = 29;
+            this.labelHedefBelirlemeMaliyeti.Text = "Hedef Belirleme Maliyeti:";
+            // 
+            // textBoxHedefMaliyetA
+            // 
+            this.textBoxHedefMaliyetA.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBoxHedefMaliyetA.Font = new System.Drawing.Font("Microsoft YaHei UI", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.textBoxHedefMaliyetA.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(97)))), ((int)(((byte)(63)))), ((int)(((byte)(46)))));
+            this.textBoxHedefMaliyetA.Location = new System.Drawing.Point(846, 202);
+            this.textBoxHedefMaliyetA.Name = "textBoxHedefMaliyetA";
+            this.textBoxHedefMaliyetA.Size = new System.Drawing.Size(64, 38);
+            this.textBoxHedefMaliyetA.TabIndex = 27;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.BackColor = System.Drawing.Color.Transparent;
+            this.label1.Font = new System.Drawing.Font("Microsoft YaHei UI", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.label1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(97)))), ((int)(((byte)(63)))), ((int)(((byte)(46)))));
+            this.label1.Location = new System.Drawing.Point(95, 305);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(272, 31);
+            this.label1.TabIndex = 23;
+            this.label1.Text = "Başlangıç Altın Miktarı:";
+            // 
+            // textBoxOyunAlanıX
+            // 
+            this.textBoxOyunAlanıX.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBoxOyunAlanıX.Font = new System.Drawing.Font("Microsoft YaHei UI", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.textBoxOyunAlanıX.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(97)))), ((int)(((byte)(63)))), ((int)(((byte)(46)))));
+            this.textBoxOyunAlanıX.Location = new System.Drawing.Point(373, 102);
+            this.textBoxOyunAlanıX.Name = "textBoxOyunAlanıX";
+            this.textBoxOyunAlanıX.Size = new System.Drawing.Size(64, 38);
+            this.textBoxOyunAlanıX.TabIndex = 9;
+            // 
+            // textBoxAdimSayisi
+            // 
+            this.textBoxAdimSayisi.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBoxAdimSayisi.Font = new System.Drawing.Font("Microsoft YaHei UI", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.textBoxAdimSayisi.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(97)))), ((int)(((byte)(63)))), ((int)(((byte)(46)))));
+            this.textBoxAdimSayisi.Location = new System.Drawing.Point(373, 352);
+            this.textBoxAdimSayisi.Name = "textBoxAdimSayisi";
+            this.textBoxAdimSayisi.Size = new System.Drawing.Size(64, 38);
+            this.textBoxAdimSayisi.TabIndex = 24;
+            // 
+            // labelOyunAlanıX
+            // 
+            this.labelOyunAlanıX.AutoSize = true;
+            this.labelOyunAlanıX.BackColor = System.Drawing.Color.Transparent;
+            this.labelOyunAlanıX.Font = new System.Drawing.Font("Microsoft YaHei UI", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.labelOyunAlanıX.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(97)))), ((int)(((byte)(63)))), ((int)(((byte)(46)))));
+            this.labelOyunAlanıX.Location = new System.Drawing.Point(95, 105);
+            this.labelOyunAlanıX.Name = "labelOyunAlanıX";
+            this.labelOyunAlanıX.Size = new System.Drawing.Size(169, 31);
+            this.labelOyunAlanıX.TabIndex = 10;
+            this.labelOyunAlanıX.Text = "Oyun Alanı X:";
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.BackColor = System.Drawing.Color.Transparent;
+            this.label2.Font = new System.Drawing.Font("Microsoft YaHei UI", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.label2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(97)))), ((int)(((byte)(63)))), ((int)(((byte)(46)))));
+            this.label2.Location = new System.Drawing.Point(95, 355);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(150, 31);
+            this.label2.TabIndex = 25;
+            this.label2.Text = "Adım Sayısı:";
+            // 
+            // labelOyunAlanıY
+            // 
+            this.labelOyunAlanıY.AutoSize = true;
+            this.labelOyunAlanıY.BackColor = System.Drawing.Color.Transparent;
+            this.labelOyunAlanıY.Font = new System.Drawing.Font("Microsoft YaHei UI", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.labelOyunAlanıY.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(97)))), ((int)(((byte)(63)))), ((int)(((byte)(46)))));
+            this.labelOyunAlanıY.Location = new System.Drawing.Point(95, 155);
+            this.labelOyunAlanıY.Name = "labelOyunAlanıY";
+            this.labelOyunAlanıY.Size = new System.Drawing.Size(168, 31);
+            this.labelOyunAlanıY.TabIndex = 11;
+            this.labelOyunAlanıY.Text = "Oyun Alanı Y:";
+            // 
+            // textBoxBaslangicAltin
+            // 
+            this.textBoxBaslangicAltin.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBoxBaslangicAltin.Font = new System.Drawing.Font("Microsoft YaHei UI", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.textBoxBaslangicAltin.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(97)))), ((int)(((byte)(63)))), ((int)(((byte)(46)))));
+            this.textBoxBaslangicAltin.Location = new System.Drawing.Point(373, 302);
+            this.textBoxBaslangicAltin.Name = "textBoxBaslangicAltin";
+            this.textBoxBaslangicAltin.Size = new System.Drawing.Size(64, 38);
+            this.textBoxBaslangicAltin.TabIndex = 22;
+            // 
+            // textBoxOyunAlanıY
+            // 
+            this.textBoxOyunAlanıY.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBoxOyunAlanıY.Font = new System.Drawing.Font("Microsoft YaHei UI", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.textBoxOyunAlanıY.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(97)))), ((int)(((byte)(63)))), ((int)(((byte)(46)))));
+            this.textBoxOyunAlanıY.Location = new System.Drawing.Point(373, 152);
+            this.textBoxOyunAlanıY.Name = "textBoxOyunAlanıY";
+            this.textBoxOyunAlanıY.Size = new System.Drawing.Size(64, 38);
+            this.textBoxOyunAlanıY.TabIndex = 9;
+            // 
+            // textBoxAltinOrani
+            // 
+            this.textBoxAltinOrani.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBoxAltinOrani.Font = new System.Drawing.Font("Microsoft YaHei UI", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.textBoxAltinOrani.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(97)))), ((int)(((byte)(63)))), ((int)(((byte)(46)))));
+            this.textBoxAltinOrani.Location = new System.Drawing.Point(373, 202);
+            this.textBoxAltinOrani.Name = "textBoxAltinOrani";
+            this.textBoxAltinOrani.Size = new System.Drawing.Size(64, 38);
+            this.textBoxAltinOrani.TabIndex = 19;
+            // 
+            // textBoxGizliAltinOrani
+            // 
+            this.textBoxGizliAltinOrani.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBoxGizliAltinOrani.Font = new System.Drawing.Font("Microsoft YaHei UI", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.textBoxGizliAltinOrani.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(97)))), ((int)(((byte)(63)))), ((int)(((byte)(46)))));
+            this.textBoxGizliAltinOrani.Location = new System.Drawing.Point(373, 252);
+            this.textBoxGizliAltinOrani.Name = "textBoxGizliAltinOrani";
+            this.textBoxGizliAltinOrani.Size = new System.Drawing.Size(64, 38);
+            this.textBoxGizliAltinOrani.TabIndex = 18;
+            // 
+            // labelAltinOrani
+            // 
+            this.labelAltinOrani.AutoSize = true;
+            this.labelAltinOrani.BackColor = System.Drawing.Color.Transparent;
+            this.labelAltinOrani.Font = new System.Drawing.Font("Microsoft YaHei UI", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.labelAltinOrani.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(97)))), ((int)(((byte)(63)))), ((int)(((byte)(46)))));
+            this.labelAltinOrani.Location = new System.Drawing.Point(95, 205);
+            this.labelAltinOrani.Name = "labelAltinOrani";
+            this.labelAltinOrani.Size = new System.Drawing.Size(143, 31);
+            this.labelAltinOrani.TabIndex = 20;
+            this.labelAltinOrani.Text = "Altın Oranı:";
+            // 
+            // labelGizliAltinOrani
+            // 
+            this.labelGizliAltinOrani.AutoSize = true;
+            this.labelGizliAltinOrani.BackColor = System.Drawing.Color.Transparent;
+            this.labelGizliAltinOrani.Font = new System.Drawing.Font("Microsoft YaHei UI", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.labelGizliAltinOrani.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(97)))), ((int)(((byte)(63)))), ((int)(((byte)(46)))));
+            this.labelGizliAltinOrani.Location = new System.Drawing.Point(95, 255);
+            this.labelGizliAltinOrani.Name = "labelGizliAltinOrani";
+            this.labelGizliAltinOrani.Size = new System.Drawing.Size(198, 31);
+            this.labelGizliAltinOrani.TabIndex = 21;
+            this.labelGizliAltinOrani.Text = "Gizli Altın Oranı:";
+            // 
+            // panel1
+            // 
+            this.panel1.BackColor = System.Drawing.Color.Transparent;
+            this.panel1.Controls.Add(this.buttonBasla);
+            this.panel1.Controls.Add(this.buttonCıkıs);
+            this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.panel1.Location = new System.Drawing.Point(0, 638);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(1216, 80);
+            this.panel1.TabIndex = 26;
+            // 
+            // buttonBasla
+            // 
+            this.buttonBasla.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonBasla.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(97)))), ((int)(((byte)(63)))), ((int)(((byte)(46)))));
+            this.buttonBasla.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.buttonBasla.Font = new System.Drawing.Font("Microsoft YaHei UI", 36F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.buttonBasla.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(252)))), ((int)(((byte)(251)))), ((int)(((byte)(223)))));
+            this.buttonBasla.Location = new System.Drawing.Point(986, 3);
+            this.buttonBasla.Name = "buttonBasla";
+            this.buttonBasla.Size = new System.Drawing.Size(180, 77);
+            this.buttonBasla.TabIndex = 14;
+            this.buttonBasla.Text = "Başla";
+            this.buttonBasla.UseVisualStyleBackColor = false;
+            this.buttonBasla.Click += new System.EventHandler(this.buttonBasla_Click);
+            // 
+            // buttonCıkıs
+            // 
+            this.buttonCıkıs.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
+            this.buttonCıkıs.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(97)))), ((int)(((byte)(63)))), ((int)(((byte)(46)))));
+            this.buttonCıkıs.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.buttonCıkıs.Font = new System.Drawing.Font("Microsoft YaHei UI", 36F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.buttonCıkıs.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(252)))), ((int)(((byte)(251)))), ((int)(((byte)(223)))));
+            this.buttonCıkıs.Location = new System.Drawing.Point(50, 3);
+            this.buttonCıkıs.Name = "buttonCıkıs";
+            this.buttonCıkıs.Size = new System.Drawing.Size(180, 74);
+            this.buttonCıkıs.TabIndex = 15;
+            this.buttonCıkıs.Text = "Çıkış";
+            this.buttonCıkıs.UseVisualStyleBackColor = false;
+            this.buttonCıkıs.Click += new System.EventHandler(this.buttonCıkıs_Click);
+            // 
+            // labelBilgilendirme
+            // 
+            this.labelBilgilendirme.BackColor = System.Drawing.Color.Transparent;
+            this.labelBilgilendirme.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.labelBilgilendirme.Font = new System.Drawing.Font("Microsoft YaHei UI", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.labelBilgilendirme.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(97)))), ((int)(((byte)(63)))), ((int)(((byte)(46)))));
+            this.labelBilgilendirme.Location = new System.Drawing.Point(0, 718);
+            this.labelBilgilendirme.Name = "labelBilgilendirme";
+            this.labelBilgilendirme.Size = new System.Drawing.Size(1216, 50);
+            this.labelBilgilendirme.TabIndex = 17;
+            this.labelBilgilendirme.Text = "# Başlamadan önce yukarıdaki kutucuklara istediğiniz değerleri girebilirsiniz";
+            this.labelBilgilendirme.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // labelOyunBaslıgı
+            // 
+            this.labelOyunBaslıgı.BackColor = System.Drawing.Color.Transparent;
+            this.labelOyunBaslıgı.Cursor = System.Windows.Forms.Cursors.Default;
+            this.labelOyunBaslıgı.Dock = System.Windows.Forms.DockStyle.Top;
+            this.labelOyunBaslıgı.Font = new System.Drawing.Font("Microsoft YaHei UI", 63.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.labelOyunBaslıgı.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(97)))), ((int)(((byte)(63)))), ((int)(((byte)(46)))));
+            this.labelOyunBaslıgı.Location = new System.Drawing.Point(0, 0);
+            this.labelOyunBaslıgı.Name = "labelOyunBaslıgı";
+            this.labelOyunBaslıgı.Size = new System.Drawing.Size(1216, 159);
+            this.labelOyunBaslıgı.TabIndex = 8;
+            this.labelOyunBaslıgı.Text = "Altın Toplama Oyunu";
+            this.labelOyunBaslıgı.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // labelAyarlar
+            // 
+            this.labelAyarlar.AutoSize = true;
+            this.labelAyarlar.BackColor = System.Drawing.Color.Transparent;
+            this.labelAyarlar.Font = new System.Drawing.Font("Microsoft YaHei UI", 36F, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
+            this.labelAyarlar.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(97)))), ((int)(((byte)(63)))), ((int)(((byte)(46)))));
+            this.labelAyarlar.Location = new System.Drawing.Point(438, 12);
+            this.labelAyarlar.Name = "labelAyarlar";
+            this.labelAyarlar.Size = new System.Drawing.Size(340, 62);
+            this.labelAyarlar.TabIndex = 45;
+            this.labelAyarlar.Text = "Oyun Ayarları";
+            this.labelAyarlar.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // Form1
+            // 
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
+            this.AutoSize = true;
+            this.BackColor = System.Drawing.Color.Gray;
+            this.ClientSize = new System.Drawing.Size(1216, 768);
+            this.Controls.Add(this.panelAcılısEkranı);
+            this.Name = "Form1";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            this.Text = "Altın Toplama Oyunu";
+            this.panelAcılısEkranı.ResumeLayout(false);
+            this.panel2.ResumeLayout(false);
+            this.panel2.PerformLayout();
+            this.panel1.ResumeLayout(false);
+            this.ResumeLayout(false);
+
+        }
+
+        #endregion
+        private System.Windows.Forms.Button buttonCıkıs;
+        private System.Windows.Forms.Button buttonBasla;
+        private System.Windows.Forms.Label labelOyunBaslıgı;
+        private System.Windows.Forms.Label labelBilgilendirme;
+        public System.Windows.Forms.Panel panelAcılısEkranı;
+        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Panel panel2;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.TextBox textBoxOyunAlanıX;
+        private System.Windows.Forms.TextBox textBoxAdimSayisi;
+        private System.Windows.Forms.Label labelOyunAlanıX;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label labelOyunAlanıY;
+        private System.Windows.Forms.TextBox textBoxBaslangicAltin;
+        private System.Windows.Forms.TextBox textBoxOyunAlanıY;
+        private System.Windows.Forms.TextBox textBoxAltinOrani;
+        private System.Windows.Forms.TextBox textBoxGizliAltinOrani;
+        private System.Windows.Forms.Label labelAltinOrani;
+        private System.Windows.Forms.Label labelGizliAltinOrani;
+        private System.Windows.Forms.Label labelD;
+        private System.Windows.Forms.TextBox textBoxHamleMaliyetD;
+        private System.Windows.Forms.TextBox textBoxHedefMaliyetD;
+        private System.Windows.Forms.Label labelC;
+        private System.Windows.Forms.TextBox textBoxGizliAltinC;
+        private System.Windows.Forms.TextBox textBoxHamleMaliyetC;
+        private System.Windows.Forms.TextBox textBoxHedefMaliyetC;
+        private System.Windows.Forms.Label labelB;
+        private System.Windows.Forms.TextBox textBoxHamleMaliyetB;
+        private System.Windows.Forms.TextBox textBoxHedefMaliyetB;
+        private System.Windows.Forms.Label labelA;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.TextBox textBoxHamleMaliyetA;
+        private System.Windows.Forms.Label labelHamleMaliyeti;
+        private System.Windows.Forms.Label labelHedefBelirlemeMaliyeti;
+        private System.Windows.Forms.TextBox textBoxHedefMaliyetA;
+        private System.Windows.Forms.Label labelAyarlar;
+    }
+}
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace AltınToplamaOyunu2
+{
+    class IntegerKontrol
+    {
+        public int kontrolEt(string str, int varsayilanDeger)
+        {
+            int deger;
+            if (str == "")
+            {
+                return varsayilanDeger;
+            }
+            else
+            {
+                if (int.TryParse(str, out deger))
+                {
+                    return deger;
+                }
+                else
+                {
+                    return -1;
+                }
+            }
+        }
+    }
+}
+
+using System;
+using System.Drawing;
+using System.Windows.Forms;
+
+namespace AltınToplamaOyunu2
+{
+    public class Kare
+    {
+        private int x, y, width, heigth;
+        public Rectangle rectangle;
+
+        public Kare(int x, int y, int width, int height)
+        {
+            this.x = x;
+            this.y = y;
+            this.width = width;
+            this.heigth = height;
+        }
+
+        public void KareCizdir(PaintEventArgs g, Color color)
+        {
+            Pen pen = new Pen(color, 4);
+            rectangle = new Rectangle(x, y, width, heigth);
+            g.Graphics.DrawRectangle(pen, rectangle);
+        }
+
+        public void KareBoya(PaintEventArgs g, Color color)
+        {
+            SolidBrush solidBrush = new SolidBrush(color);
+            rectangle = new Rectangle(x, y, width, heigth);
+            g.Graphics.FillRectangle(solidBrush, rectangle);
+        }
+
+        public void KareYazdir(PaintEventArgs g, Color color, String str)
+        {
+            Font font = new Font("Microsoft YaHei UI", width/3);
+            SolidBrush solidBrush = new SolidBrush(color);
+            rectangle = new Rectangle(x, y, width, heigth);
+            //g.Graphics.DrawString(str, font, solidBrush, x + width/6, y + heigth/4);
+            g.Graphics.DrawString(str, font, solidBrush, x + width/2, y + heigth/2, new StringFormat()
+            {
+                Alignment = StringAlignment.Center,
+                LineAlignment = StringAlignment.Center
+            });   
+        }
+    }
+}
+
+using System;
+
+namespace AltınToplamaOyunu2
+{
+    class KonumKontrol
+    {
+        int kare_sayisi_x;
+        int kare_sayisi_y;
+
+        public KonumKontrol(int kare_sayisi_x, int kare_sayisi_y)
+        {
+            this.kare_sayisi_x = kare_sayisi_x;
+            this.kare_sayisi_y = kare_sayisi_y;
+        }
+
+        public bool OyuncuKonumuMu(int x, int y)
+        {
+            if(x == 0 && y == 0)
+            {
+                return true;
+            }else if(x == kare_sayisi_x-1 && y == 0)
+            {
+                return true;
+            }else if(x == 0 && y == kare_sayisi_y-1)
+            {
+                return true;
+            }else if(x == kare_sayisi_x-1 && y == kare_sayisi_y-1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+    }
+}
+
+using System;
+using System.IO;
+namespace AltınToplamaOyunu2
+{
+    public class Log
+    {
+        string dosya;
+        public FileStream fs;
+        public StreamWriter sw;
+
+        public Log(string dosya_adi)
+        {
+            dosya = "..\\..\\..\\Loglama\\" + dosya_adi + ".txt";
+            fs = new FileStream(dosya, FileMode.Create, FileAccess.Write);
+            sw = new StreamWriter(fs);
+        }
+
+        public void DosyaYazdır(string str)
+        {
+            if (File.Exists(dosya))
+            {
+                sw.WriteLine(str);
+                sw.Flush();
+            }
+        } 
+    }
+}
+
+using System.Windows.Forms;
+
+namespace AltınToplamaOyunu2
+{
+    class Mesaj
+    {
+        public void mesajVer()
+        {
+            string message = "Geçersiz değer girişi!";
+            string title = "Uyarı";
+            MessageBoxButtons buttons = MessageBoxButtons.OK;
+            MessageBox.Show(message, title, buttons, MessageBoxIcon.Warning);
+        }
+    }
+}
+
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Windows.Forms;
+
+namespace AltınToplamaOyunu2
+{
+    public class Oyun : Label
+    {
+        OyunAlaniMatrisi oyunAlaniMatrisi;
+        Altin altin;
+        AOyuncusu aoyuncusu;
+        BOyuncusu boyuncusu;
+        COyuncusu coyuncusu;
+        DOyuncusu doyuncusu;
+        List<Oyuncu> oyuncularListesi;
+        private int pencere_yuksekligi;
+        private int pencere_genisligi;
+        System.Windows.Forms.Timer timer;
+        private int turSayisi;
+        OyunSonuPaneli oyunSonuPaneli;
+        List<Log> logListesi;
+
+        public Oyun(int pencere_genisligi, int pencere_yuksekligi)
+        {
+            this.oyunAlaniMatrisi = new OyunAlaniMatrisi(pencere_genisligi, pencere_yuksekligi, VarsayilanDegerler.KARE_SAY_X, VarsayilanDegerler.KARE_SAY_Y);
+            this.pencere_genisligi = pencere_genisligi;
+            this.pencere_yuksekligi = pencere_yuksekligi;
+            this.Width = this.pencere_genisligi;
+            this.Height = this.pencere_yuksekligi;
+            this.Location = new Point(0, 0);
+
+            this.Paint += new PaintEventHandler(this.OyunAlaniCizdir);
+
+            logListesi = new List<Log>()
+            {
+                { new Log("A Log Dosyası") },
+                { new Log("B Log Dosyası") },
+                { new Log("C Log Dosyası") },
+                { new Log("D Log Dosyası") }
+            };
+
+            this.altin = new Altin(VarsayilanDegerler.KARE_SAY_X, VarsayilanDegerler.KARE_SAY_Y, VarsayilanDegerler.ALTIN_ORANI, VarsayilanDegerler.GIZLI_ALTIN_ORANI);
+            this.aoyuncusu = new AOyuncusu(this, "A", 0, 0, VarsayilanDegerler.BASLANGIC_ALTIN_MIKTARI, Color.Red, logListesi[0]);
+            this.boyuncusu = new BOyuncusu(this, "B", 0, VarsayilanDegerler.KARE_SAY_Y - 1, VarsayilanDegerler.BASLANGIC_ALTIN_MIKTARI, Color.LightGreen, logListesi[1]);
+            this.coyuncusu = new COyuncusu(this, "C", VarsayilanDegerler.KARE_SAY_X - 1, 0, VarsayilanDegerler.BASLANGIC_ALTIN_MIKTARI, Color.LightBlue, logListesi[2]);
+            this.doyuncusu = new DOyuncusu(aoyuncusu, boyuncusu, coyuncusu,
+                                           this, "D", VarsayilanDegerler.KARE_SAY_X - 1, VarsayilanDegerler.KARE_SAY_Y - 1, VarsayilanDegerler.BASLANGIC_ALTIN_MIKTARI, Color.MediumPurple, logListesi[3]);
+
+            timer = new System.Windows.Forms.Timer();
+            timer.Tick += new EventHandler(this.TurOyna);
+            timer.Interval = 100;
+            timer.Start();
+            turSayisi = 0;
+
+            oyuncularListesi = new List<Oyuncu>();
+            oyuncularListesi.Add(aoyuncusu);
+            oyuncularListesi.Add(boyuncusu);
+            oyuncularListesi.Add(coyuncusu);
+            oyuncularListesi.Add(doyuncusu);
+        }
+
+        public void OyunAlaniCizdir(object sender, PaintEventArgs g)
+        {
+            oyunAlaniMatrisi.OyunAlaniCizdir(g);
+            altin.AltinlariCizdir(g, oyunAlaniMatrisi.kareler);
+            altin.GizliAltinlariCizdir(g, oyunAlaniMatrisi.kareler);
+            altin.AltinMiktarlariniCizdir(g, oyunAlaniMatrisi.kareler);
+            foreach(var oyuncu in oyuncularListesi)
+            {
+                oyuncu.OyuncuCizdir(g, oyunAlaniMatrisi.kareler);
+                oyuncu.HedefCizdir(g, oyunAlaniMatrisi.kareler);
+            }
+        }
+
+        public void TurOyna(Object sender, EventArgs e)
+        {
+            if (turSayisi % 4 == 0 && aoyuncusu.oyuncu_hayatta_mi == true)
+            {
+                aoyuncusu.HamleYap(oyunAlaniMatrisi);
+                this.Refresh();
+            }
+
+            if (turSayisi % 4 == 1 && boyuncusu.oyuncu_hayatta_mi == true)
+            {
+                boyuncusu.HamleYap(oyunAlaniMatrisi);
+                this.Refresh();
+            }
+
+            if (turSayisi % 4 == 2 && coyuncusu.oyuncu_hayatta_mi == true)
+            {
+                coyuncusu.HamleYap(oyunAlaniMatrisi);
+                this.Refresh();
+            }
+
+            if (turSayisi % 4 == 3 && doyuncusu.oyuncu_hayatta_mi == true)
+            {
+                doyuncusu.HamleYap(oyunAlaniMatrisi);
+                this.Refresh();
+            }
+
+            turSayisi++;
+            if (aoyuncusu.oyuncu_hayatta_mi == false &&
+                boyuncusu.oyuncu_hayatta_mi == false &&
+                coyuncusu.oyuncu_hayatta_mi == false &&
+                doyuncusu.oyuncu_hayatta_mi == false)
+            {
+                timer.Stop();
+                this.Controls.Clear();
+                this.oyunSonuPaneli = new OyunSonuPaneli(this.Width, this.Height, aoyuncusu, boyuncusu, coyuncusu, doyuncusu);
+                this.Controls.Add(oyunSonuPaneli);
+
+                foreach(var log in logListesi)
+                {
+                    log.sw.Close();
+                    log.fs.Close();
+                }
+            }
+        }
+    }
+}
+
+using System.Drawing;
+using System.Windows.Forms;
+
+namespace AltınToplamaOyunu2
+{
+    public class OyunAlaniMatrisi
+    {
+        private int pencere_yuksekligi;
+        private int pencere_genisligi;
+        private int kare_sayisi_x, kare_sayisi_y;
+        public Kare[,] kareler;
+
+        public OyunAlaniMatrisi(int pencere_genisligi, int pencere_yuksekligi, int kare_sayisi_x, int kare_sayisi_y)
+        {
+            this.pencere_genisligi = pencere_genisligi;
+            this.pencere_yuksekligi = pencere_yuksekligi;
+            this.kare_sayisi_x = kare_sayisi_x;
+            this.kare_sayisi_y = kare_sayisi_y;
+            this.kareler = new Kare[kare_sayisi_x, kare_sayisi_y];
+            OyunAlaniMatrisiOlustur();
+        }
+
+        private void OyunAlaniMatrisiOlustur()
+        {
+            int x = 0;
+            int y = 0;
+            int kare_kenarı;
+            int artik_deger;
+
+            if (kare_sayisi_x > kare_sayisi_y)
+            {
+                kare_kenarı = pencere_yuksekligi / kare_sayisi_x;
+                artik_deger = (pencere_yuksekligi % kare_sayisi_x) / 2;
+            }
+            else
+            {
+                kare_kenarı = pencere_yuksekligi / kare_sayisi_y;
+                artik_deger = (pencere_yuksekligi % kare_sayisi_y) / 2;
+            }
+
+            for (int i = 0; i < kare_sayisi_x; i++)
+            {
+                for (int j = 0; j < kare_sayisi_y; j++)
+                {
+                    kareler[i, j] = new Kare(x + artik_deger, y + artik_deger, kare_kenarı, kare_kenarı);
+                    x += kare_kenarı;
+                }
+                x = 0;
+                y += kare_kenarı;
+            }
+        }
+
+        public void OyunAlaniCizdir(PaintEventArgs g)
+        {
+            for (int i = 0; i < kare_sayisi_x; i++)
+            {
+                for (int j = 0; j < kare_sayisi_y; j++)
+                {
+                    kareler[i, j].KareCizdir(g, Color.White);
+                }
+            }
+        }
+    }
+}
+
+using System;
+using System.Drawing;
+using System.Windows.Forms;
+
+namespace AltınToplamaOyunu2
+{
+    public abstract class Oyuncu
+    {
+        public Oyun oyun;
+        public Color color;
+        public string adi;
+        public int x, y;
+        public int width, heigth;
+        public int altin_miktari;
+        public int hedef_x;
+        public int hedef_y;
+        public int hedefe_uzaklik;
+        public int kac_hamlede_ulasir;
+        public bool oyuncu_hayatta_mi = true;
+        public bool ilk_hedef_belirleme_durumu;
+        public int hamle_maliyeti;
+        public int hedef_maliyeti;
+        public int atilan_adim_sayisi = 0;
+        public int harcanan_altin_miktari = 0;
+        public int toplanan_altin_miktari = 0;
+
+        public Oyuncu(Oyun oyun, string adi, int x, int y, int altin_miktari, int hamle_maliyeti, int hedef_maliyeti)
+        {
+            this.adi = adi;
+            this.x = x;
+            this.y = y;
+            this.altin_miktari = altin_miktari;
+            this.oyun = oyun;
+            this.ilk_hedef_belirleme_durumu = true;
+            this.hamle_maliyeti = hamle_maliyeti;
+            this.hedef_maliyeti = hedef_maliyeti;
+        }
+
+        public void OyuncuCizdir(PaintEventArgs g, Kare[,] kareler)
+        {
+            kareler[this.x, this.y].KareBoya(g, this.color);
+            kareler[this.x, this.y].KareYazdir(g, Color.Black, this.adi);
+        }
+
+        public void HedefCizdir(PaintEventArgs g, Kare[,] kareler)
+        {
+            kareler[this.hedef_x, this.hedef_y].KareCizdir(g, color);
+        }
+
+        public void Oyna()
+        {
+            if (hedef_x > this.x)
+            {
+                this.x++;
+                this.atilan_adim_sayisi++;
+                return;
+            }
+            else if (hedef_x < this.x)
+            {
+                this.x--;
+                this.atilan_adim_sayisi++;
+                return;
+            }
+
+            if (hedef_y > this.y)
+            {
+                this.y++;
+                this.atilan_adim_sayisi++;
+                return;
+            }
+            else if (hedef_y < this.y)
+            {
+                this.y--;
+                this.atilan_adim_sayisi++;
+                return;
+            }
+        }
+
+        public int UzaklikHesapla(int x, int y)
+        {
+            return Math.Abs(this.x - x) + Math.Abs(this.y - y);
+        }
+
+        public abstract void HedefBelirle();
+
+        public virtual void HamleYap(OyunAlaniMatrisi oyunAlaniMatrisi)
+        {
+            if (this.ilk_hedef_belirleme_durumu == true)
+            {
+                this.HedefBelirle();
+                for (int i = 0; i < VarsayilanDegerler.ADIM_SAYISI; i++)
+                {
+                    this.Oyna();
+                    if (HedefeUlasildiMi() == true)
+                    {
+                        break;
+                    }
+                }
+                this.ilk_hedef_belirleme_durumu = false;
+            }
+            else
+            {
+                if (Altin.altinKonumlariMatrisi[this.hedef_x, this.hedef_y] == 1)
+                {
+                    for (int i = 0; i < VarsayilanDegerler.ADIM_SAYISI; i++)
+                    {
+                        this.Oyna();
+                        if (HedefeUlasildiMi() == true)
+                        {
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    this.HedefBelirle();
+                    for (int i = 0; i < VarsayilanDegerler.ADIM_SAYISI; i++)
+                    {
+                        this.Oyna();
+                        if (HedefeUlasildiMi() == true)
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        public bool HedefeUlasildiMi()
+        {
+            if (this.x == this.hedef_x && this.y == hedef_y)
+            {
+                this.altin_miktari += Altin.altinMiktarlariMatrisi[this.hedef_x, this.hedef_y];
+                this.toplanan_altin_miktari += Altin.altinMiktarlariMatrisi[this.hedef_x, this.hedef_y];
+                Altin.altinKonumlariMatrisi[this.hedef_x, this.hedef_y] = 0;
+                Altin.altinMiktarlariMatrisi[this.hedef_x, this.hedef_y] = 0;
+                Altin.altinHedeflenmislerMatrisi[this.hedef_x, this.hedef_y] = 0;
+                this.HedefBelirle();
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public bool HedefBelirlemeMaliyetKontrolu()
+        {
+            if(this.altin_miktari > this.hedef_maliyeti)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public bool HamleYapmaMaliyetKontrolu()
+        {
+            if (this.altin_miktari > this.hamle_maliyeti)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+    }
+}
+
+using System;
+using System.Drawing;
+using System.Windows.Forms;
+
+namespace AltınToplamaOyunu2
+{
+    class OyunSonuPaneli : Panel
+    {
+        public string oyuncu_adi_a = "A Oyuncusu";
+        public string oyuncu_adi_b = "B Oyuncusu";
+        public string oyuncu_adi_c = "C Oyuncusu";
+        public string oyuncu_adi_d = "D Oyuncusu";
+
+        public string atilan_adim_sayisi = "Adım sayısı";
+        public string harcanan_altin_miktari = "Harcanan Altın";
+        public string toplanan_altin_miktari = "Toplanan Altın";
+        public string sahip_olunan_altin_miktari = "Oyun Sonu Altın";
+
+        public string A_atilan_adim_sayisi;
+        public string A_harcanan_altin_miktari;
+        public string A_toplanan_altin_miktari;
+        public string A_sahip_olunan_altin_miktari;
+
+        public string B_atilan_adim_sayisi;
+        public string B_harcanan_altin_miktari;
+        public string B_toplanan_altin_miktari;
+        public string B_sahip_olunan_altin_miktari;
+
+        public string C_atilan_adim_sayisi;
+        public string C_harcanan_altin_miktari;
+        public string C_toplanan_altin_miktari;
+        public string C_sahip_olunan_altin_miktari;
+
+        public string D_atilan_adim_sayisi;
+        public string D_harcanan_altin_miktari;
+        public string D_toplanan_altin_miktari;
+        public string D_sahip_olunan_altin_miktari;
+
+        public Label[,] tabloLabel;
+        int x = 3, y = 174;
+        int w = 242, h = 84;
+        public string[] stringler;
+
+        public OyunSonuPaneli(int width, int height, Oyuncu aoyuncusu, Oyuncu boyuncusu, Oyuncu coyuncusu, Oyuncu doyuncusu)
+        {
+            this.A_atilan_adim_sayisi = Convert.ToString(aoyuncusu.atilan_adim_sayisi);
+            this.A_harcanan_altin_miktari = Convert.ToString(aoyuncusu.harcanan_altin_miktari);
+            this.A_toplanan_altin_miktari = Convert.ToString(aoyuncusu.toplanan_altin_miktari);
+            this.A_sahip_olunan_altin_miktari = Convert.ToString(aoyuncusu.altin_miktari);
+
+            this.B_atilan_adim_sayisi = Convert.ToString(boyuncusu.atilan_adim_sayisi);
+            this.B_harcanan_altin_miktari = Convert.ToString(boyuncusu.harcanan_altin_miktari);
+            this.B_toplanan_altin_miktari = Convert.ToString(boyuncusu.toplanan_altin_miktari);
+            this.B_sahip_olunan_altin_miktari = Convert.ToString(boyuncusu.altin_miktari);
+
+            this.C_atilan_adim_sayisi = Convert.ToString(coyuncusu.atilan_adim_sayisi);
+            this.C_harcanan_altin_miktari = Convert.ToString(coyuncusu.harcanan_altin_miktari);
+            this.C_toplanan_altin_miktari = Convert.ToString(coyuncusu.toplanan_altin_miktari);
+            this.C_sahip_olunan_altin_miktari = Convert.ToString(coyuncusu.altin_miktari);
+
+            this.D_atilan_adim_sayisi = Convert.ToString(doyuncusu.atilan_adim_sayisi);
+            this.D_harcanan_altin_miktari = Convert.ToString(doyuncusu.harcanan_altin_miktari);
+            this.D_toplanan_altin_miktari = Convert.ToString(doyuncusu.toplanan_altin_miktari);
+            this.D_sahip_olunan_altin_miktari = Convert.ToString(doyuncusu.altin_miktari);
+
+            stringler = new string[25];
+
+            stringler[0] = "";
+            stringler[1] = oyuncu_adi_a;
+            stringler[2] = oyuncu_adi_b;
+            stringler[3] = oyuncu_adi_c;
+            stringler[4] = oyuncu_adi_d;
+
+            stringler[5] = atilan_adim_sayisi;
+            stringler[6] = A_atilan_adim_sayisi;
+            stringler[7] = B_atilan_adim_sayisi;
+            stringler[8] = C_atilan_adim_sayisi;
+            stringler[9] = D_atilan_adim_sayisi;
+
+            stringler[10] = harcanan_altin_miktari;
+            stringler[11] = A_harcanan_altin_miktari;
+            stringler[12] = B_harcanan_altin_miktari;
+            stringler[13] = C_harcanan_altin_miktari;
+            stringler[14] = D_harcanan_altin_miktari;
+
+            stringler[15] = toplanan_altin_miktari;
+            stringler[16] = A_toplanan_altin_miktari;
+            stringler[17] = B_toplanan_altin_miktari;
+            stringler[18] = C_toplanan_altin_miktari;
+            stringler[19] = D_toplanan_altin_miktari;
+
+            stringler[20] = sahip_olunan_altin_miktari;
+            stringler[21] = A_sahip_olunan_altin_miktari;
+            stringler[22] = B_sahip_olunan_altin_miktari;
+            stringler[23] = C_sahip_olunan_altin_miktari;
+            stringler[24] = D_sahip_olunan_altin_miktari;
+
+            this.Width = width;
+            this.Height = height;
+            this.Location = new Point(0, 0);
+            this.BackColor = Color.FromArgb(252, 251, 223);
+
+            tabloLabel = new Label[5, 5];
+
+            int indis = 0;
+            for (int i = 0; i < tabloLabel.GetUpperBound(0) + 1; i++)
+            {
+                for (int j = 0; j < tabloLabel.GetUpperBound(1) + 1; j++)
+                {
+                    Console.WriteLine(this.Width);
+                    Console.WriteLine(this.Height);
+                    tabloLabel[i, j] = new Label();
+                    tabloLabel[i, j].Font = new Font("Microsoft YaHei UI", 18F, FontStyle.Regular, GraphicsUnit.Point, ((byte)(162)));
+                    tabloLabel[i, j].ForeColor = Color.FromArgb(((int)(((byte)(97)))), ((int)(((byte)(63)))), ((int)(((byte)(46)))));
+                    tabloLabel[i, j].TextAlign = ContentAlignment.MiddleCenter;
+                    tabloLabel[i, j].Size = new Size(w, h);
+                    tabloLabel[i, j].AutoSize = false;
+                    tabloLabel[i, j].Location = new Point(x, y);
+                    tabloLabel[i, j].Text = stringler[indis];
+                    indis++;
+                    this.Controls.Add(tabloLabel[i, j]);
+                    x += w;
+                }
+                x = 3;
+                y += h;
+            }
+        }
+    }
+}
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace AltınToplamaOyunu2
+{
+    static class Program
+    {
+        /// <summary>
+        /// Uygulamanın ana girdi noktası.
+        /// </summary>
+        [STAThread]
+        static void Main()
+        {
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            Application.Run(new Form1());
+        }
+    }
+}
+
+using System;
+
+namespace AltınToplamaOyunu2
+{
+    public class VarsayilanDegerler
+    {
+        public static int KARE_SAY_X = 20, KARE_SAY_Y = 20;
+        public static int ALTIN_ORANI = 20;
+        public static int GIZLI_ALTIN_ORANI = 10;
+        public static int BASLANGIC_ALTIN_MIKTARI = 200;
+        public static int ADIM_SAYISI = 3;
+        public static int A_HAMLE_MALIYETI = 5;
+        public static int A_HEDEF_MALIYETI = 15;
+        public static int B_HAMLE_MALIYETI = 5;
+        public static int B_HEDEF_MALIYETI = 10;
+        public static int C_HAMLE_MALIYETI = 5;
+        public static int C_HEDEF_MALIYETI = 15;
+        public static int C_ACILACAK_GIZLI = 2;
+        public static int D_HAMLE_MALIYETI = 5;
+        public static int D_HEDEF_MALIYETI = 20;
+    }
+}
+
+
+
+
+
+
+
+
+
